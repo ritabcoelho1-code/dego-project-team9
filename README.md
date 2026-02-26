@@ -1,2 +1,2 @@
 # dego-project-team9
-DEGO Course Project — Team 9
+DEGO Group Project, Credit Application Governance Analysis — Team 9
