@@ -36,17 +36,4 @@ Because credit scoring is classified as a high-risk AI system, NovaCred must com
 
 ### Governance Recommendations
 To enhance compliance and reduce risk, NovaCred should enforce mandatory timestamps for all applications, standardised in UTC, and prevent the ingestion of records without one. The company should implement strong access controls for PII, apply pseudonymisation as early as possible in the data pipeline, document the lawful basis for all processing activities and define a clear retention period for personal data. Regular audits, ongoing monitoring of timestamp consistency and periodic DPIAs are recommended to maintain long-term compliance with both GDPR and the EU AI Act.
-______ 
 
-## Sensitive PII Stored Without Protection
-
-We identified storage of:
-1. Full SSNs
-2. IP addresses
-3. Full names and emails
-
-These are stored in plaintext without hashing or encryption, without consent tracking or retention policy fields.
-This indicates non-compliance risk under GDPR principles:
-- Data minimization
-- Storage limitation
-- Security of processing
