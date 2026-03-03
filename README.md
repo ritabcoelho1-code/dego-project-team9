@@ -3,6 +3,7 @@ DEGO Course Project — Team 9
 
 ## Team Members
 - Tom Osterwald
+- Lara Corina Martins
 
 ## Project Description
 Credit scoring bias analysis for DEGO course.
