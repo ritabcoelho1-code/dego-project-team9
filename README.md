@@ -203,7 +203,91 @@ These issues highlight the importance of **data governance controls and preproce
 
 # 5. Bias and Fairness Analysis
 
-TBD
+This stage evaluates whether NovaCred’s automated credit decision system produces systematically different outcomes across demographic groups.
+
+The bias analysis was conducted on the **cleaned dataset of 500 records after deduplication**. Before computing fairness metrics, the data was preprocessed by standardizing gender values, parsing mixed-format birth dates to derive age, and handling invalid financial values identified during the data quality stage.
+
+The analysis focuses on four elements:
+
+- approval-rate disparities across demographic groups  
+- disparate impact using the **four-fifths rule**  
+- age-based differences in approval outcomes  
+- proxy and interaction effects involving ZIP code and demographic variables  
+
+---
+
+## 5.1 Gender Bias Analysis
+
+The overall loan approval rate across the dataset is **58.4%**.
+
+When broken down by gender, a substantial approval gap appears:
+
+| Gender | Approved | Total | Approval Rate |
+|---|---:|---:|---:|
+| Male | 163 | 247 | **66.0%** |
+| Female | 127 | 251 | **50.6%** |
+
+The **Disparate Impact Ratio** is therefore:
+
+`50.6% / 66.0% = 0.7668`
+
+Under the **four-fifths rule**, values below **0.80** indicate potential disparate impact. The observed ratio of **0.77** therefore suggests a meaningful fairness concern in loan approval outcomes.
+
+This difference is also statistically significant. A chi-square test indicates that the relationship between gender and approval outcome is unlikely to be due to random variation.
+
+A conditional fairness test using logistic regression was also performed with financial control variables such as income, debt-to-income ratio, credit history, savings balance, and age. Even after controlling for these variables, gender remained a significant predictor of approval outcome. This suggests that the observed disparity cannot be fully explained by the financial variables included in the dataset.
+
+At the same time, the analysis did **not** find strong evidence of pricing discrimination among approved applicants. The main fairness concern appears to affect **approval decisions**, rather than the interest rates assigned after approval.
+
+---
+
+## 5.2 Age Bias Analysis
+
+Applicant age was derived from the `date_of_birth` field after standardizing mixed date formats.
+
+Applicants were grouped into five age bands:
+
+| Age Group | Approved | Total | Approval Rate |
+|---|---:|---:|---:|
+| 18–25 | 10 | 23 | **43.5%** |
+| 26–35 | 78 | 161 | **48.5%** |
+| 36–50 | 149 | 221 | **67.4%** |
+| 51–65 | 48 | 83 | 57.8% |
+| 66+ | 4 | 8 | 50.0% |
+
+The results show lower approval rates among younger applicants, especially those under 35, compared with the highest-performing age group of 36–50.
+
+A statistical test across age groups confirms that these approval differences are significant. However, when age is tested alongside financial controls in a logistic model, age does not appear to remain independently predictive. This suggests that the age disparities may be partly explained by correlated financial factors such as shorter credit histories among younger applicants, rather than direct age-based discrimination alone.
+
+---
+
+## 5.3 Proxy and Interaction Effects
+
+The analysis also considered whether other variables might act as indirect proxies for protected attributes.
+
+One important finding concerns **ZIP code**. The dataset is heavily split between ZIP codes associated with two geographic clusters, and those clusters are strongly associated with gender composition. In practice, this means ZIP code may function as a proxy variable even if it is not explicitly intended to represent gender.
+
+Although conditional testing did not confirm that ZIP code independently predicts approval after financial controls are included, the variable still presents a governance concern. A feature that is strongly collinear with gender may introduce structural discrimination risk in future model versions.
+
+The analysis also reviewed selected spending-related variables as potential proxy features. No strong evidence of proxy discrimination through spending behaviour was confirmed in the fairness tests, but some categories still raise governance concerns because they may capture sensitive lifestyle information without a clear credit-risk justification.
+
+Finally, interaction effects between **gender and age** suggest that aggregate fairness metrics may understate the severity of disparities for some subgroups. This indicates that fairness monitoring should not rely only on high-level averages, but also examine subgroup outcomes where compounded disadvantage may occur.
+
+---
+
+## 5.4 Summary
+
+The bias and fairness assessment identifies a clear governance concern in the NovaCred decision pipeline.
+
+The main findings are:
+
+- a substantial and statistically significant approval gap between male and female applicants  
+- a **Disparate Impact Ratio below 0.80**, indicating potential disparate impact under the four-fifths rule  
+- age-related differences in approval outcomes, especially for younger applicants  
+- evidence that ZIP code may operate as a structurally risky proxy variable  
+- subgroup-level disparities that may be hidden by aggregate fairness metrics  
+
+Overall, the results suggest that fairness risks are present in the automated approval process and should be addressed through stronger monitoring, model review, and governance controls.
 
 ---
 
