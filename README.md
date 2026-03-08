@@ -293,7 +293,72 @@ Overall, the results suggest that fairness risks are present in the automated ap
 
 # 6. Privacy and Governance Assessment
 
-TBD
+The final stage of the analysis evaluates the dataset from a **privacy and regulatory governance perspective**. Automated credit decision systems operate in a highly regulated environment where personal data must be handled according to strict legal and ethical standards.
+
+The NovaCred dataset contains several categories of **personally identifiable information (PII)** that could expose individuals to privacy risks if improperly handled.
+
+Examples of sensitive data present in the dataset include:
+
+- full names  
+- email addresses  
+- social security numbers  
+- IP addresses  
+- birth dates  
+- ZIP codes  
+
+These variables make it possible to **directly or indirectly identify individuals**, which introduces potential compliance risks under the **General Data Protection Regulation (GDPR)**.
+
+---
+
+## 6.1 Identification of Personal Data
+
+Several attributes in the dataset qualify as **direct identifiers**, meaning they can uniquely identify an individual without additional information. These include names, social security numbers, and email addresses.
+
+Other attributes function as **quasi-identifiers**, which may not uniquely identify an individual on their own but can lead to identification when combined with other variables. Examples include date of birth, ZIP code, and IP address.
+
+The presence of both direct and quasi-identifiers significantly increases the **re-identification risk** within the dataset.
+
+---
+
+## 6.2 GDPR Compliance Risks
+
+From a governance perspective, the dataset raises several potential compliance issues under GDPR principles.
+
+First, the dataset includes personal identifiers that may not be strictly necessary for the automated credit decision process. This raises concerns related to the **data minimisation principle**, which requires organizations to collect only the data that is necessary for a specific purpose.
+
+Second, the dataset contains highly sensitive identifiers such as **social security numbers**, which require strong security safeguards. If such data were exposed or misused, it could lead to identity theft or financial fraud.
+
+Finally, the dataset does not contain explicit indicators of user consent or documented processing purposes. This may create **accountability and transparency concerns** if the dataset were used in real-world automated decision systems.
+
+---
+
+## 6.3 Privacy-Preserving Transformations
+
+To demonstrate privacy-preserving governance practices, a **privacy-enhanced dataset** was created as part of the analysis.
+
+Several transformations were applied to reduce the risk of personal identification:
+
+- email addresses were hashed  
+- social security numbers were masked  
+- dates of birth were generalized into age groups  
+- direct identifiers such as names were removed  
+
+These transformations illustrate how **privacy-by-design principles** can be implemented in AI data pipelines while preserving analytical usefulness.
+
+---
+
+## 6.4 Governance Implications
+
+Automated credit decision systems fall under the category of **high-risk AI systems** under the EU AI Act.
+
+Such systems require strong governance controls, including:
+
+- documented data governance procedures  
+- fairness monitoring and risk assessment  
+- traceability of automated decisions  
+- protection of personal data throughout the data lifecycle
+
+The presence of direct identifiers and quasi-identifiers in the raw dataset highlights the importance of **robust privacy governance practices** before deploying automated decision systems in production environments.
 
 ---
 
