@@ -5,8 +5,8 @@
 ## Team Members
 - **Tom Osterwald** — Lead  
 - **Lara Corina Martins** — Governance  
-- **Lucrezia Salerno**  
-- **Rita Borges Coelho**
+- **Lucrezia Salerno** — Engineer
+- **Rita Borges Coelho** — Scientist
 
 ---
 
@@ -120,13 +120,20 @@ These checks correspond to core **data governance quality dimensions**, includin
 
 ### Bias and Fairness Analysis
 
-The fairness analysis evaluates whether the automated credit decision system exhibits unequal approval outcomes across demographic groups.
+The fairness analysis evaluates whether the automated credit decision system exhibits unequal approval outcomes across demographic groups and whether non-protected variables may indirectly reproduce demographic disparities.
 
-Approval rates were calculated across gender groups and compared to identify potential disparities. To formally evaluate fairness outcomes, the **Disparate Impact Ratio** was computed as the ratio of approval rates between female and male applicants.
+Approval rates were calculated across **gender groups** and compared to identify potential disparities. To formally assess fairness outcomes, the **Disparate Impact (DI) Ratio** was computed as the ratio of approval rates between female and male applicants:
 
-The ratio was interpreted using the **four-fifths rule**, which indicates potential discriminatory impact when the value falls below **0.8**.
+- DI = Approval rate (female) / Approval rate (male)
 
-Additional analysis examined approval rates across **age groups** derived from applicant birth dates to detect potential age-related disparities in loan approval outcomes.
+The ratio was interpreted using the **four-fifths rule**, which indicates potential discriminatory impact when the value falls below **0.80**.
+
+Approval rates were also analyzed across **age groups** derived from applicant birth dates. Age-based differences were evaluated descriptively and formally tested using a **chi-square test** of independence to determine whether approval outcomes vary significantly across age categories.
+
+To assess whether disparities differ across combined demographic groups, we examined **interaction effects (Age × Gender)** by computing approval rates within each age–gender segment. In addition to descriptive approval comparisons, we calculated a **segment-level Disparate Impact (DI) ratio** within each age group (female approval rate relative to male approval rate).
+This allows identification of subgroup-specific disparities that may not be visible in aggregate gender or age statistics, highlighting whether certain age segments experience amplified or mitigated gender gaps.
+
+In addition to direct disparity testing, we conducted a **proxy discrimination analysis** to determine whether non-protected variables may act as indirect stand-ins for protected attributes. 
 
 ---
 
