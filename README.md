@@ -331,17 +331,13 @@ Accordingly, while state qualifies as a structural proxy variable, the results d
 
 ## 5.4 Summary
 
-The bias and fairness assessment identifies a clear governance concern in the NovaCred decision pipeline.
+This assessment examined fairness across four dimensions: gender bias, age bias, interaction effects (age × gender), and proxy discrimination through geographic variables.
 
-The main findings are:
+The analysis identifies a statistically significant gender approval gap, with the overall Disparate Impact ratio falling below the 0.80 benchmark. Age-based differences are also observed, particularly among younger applicants, though some variation appears consistent with life-cycle financial patterns.
 
-- a substantial and statistically significant approval gap between male and female applicants  
-- a **Disparate Impact Ratio below 0.80**, indicating potential disparate impact under the four-fifths rule  
-- age-related differences in approval outcomes, especially for younger applicants  
-- evidence that ZIP code may operate as a structurally risky proxy variable  
-- subgroup-level disparities that may be hidden by aggregate fairness metrics  
+Interaction analysis shows that adverse impact is concentrated within specific subgroups—most notably the 26–35 segment—rather than uniformly distributed across all ages.
 
-Overall, the results suggest that fairness risks are present in the automated approval process and should be addressed through stronger monitoring, model review, and governance controls.
+Finally, geographic variables exhibit strong association with gender (proxy potential), but their independent effect on approval decisions is limited after controlling for gender and financial characteristics, indicating structural proxy risk rather than active proxy discrimination.
 
 ---
 
