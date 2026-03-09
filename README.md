@@ -315,6 +315,18 @@ Overall, the results suggest that gender-based adverse impact is **concentrated 
 
 ## 5.4 Proxy discrimination
 
+To assess whether non-protected variables function as indirect channels of bias, we evaluate whether geography (state derived from ZIP code) acts as a proxy for gender and whether it independently influences loan approval decisions. The analysis follows a two-step logic: first, testing whether geography strongly encodes gender (proxy potential), and second, assessing whether it independently affects approval outcomes after controlling for gender and financial risk factors (proxy in action).
+
+Approval rates differ across geographic groups, with New York exhibiting a higher approval rate (64.5%) than Los Angeles (51.7%). 
+
+A chi-square test examining the relationship between state and gender yields a large test statistic (χ² = 324.668) and an extremely small p-value (p < 0.001), indicating a strong statistical association between geography and gender. Gender composition varies substantially across states ( Los Angeles is predominantly female, while New York is predominantly male), confirming that geography encodes protected-attribute information.
+
+To evaluate whether geography independently drives decisions, we estimate a logistic regression including state, gender, and core financial variables. The results show that the state indicator corresponds to an odds ratio of 1.066, implying a 6.6% increase in approval odds for New York relative to Los Angeles after controls are included. In contrast, the gender indicator (male) exhibits an odds ratio of 1.337 (33.7% higher odds), and financial variables such as income (OR = 1.335) and credit history (OR = 1.257) show materially stronger associations with approval outcomes.
+
+The findings indicate that geography possesses clear proxy potential, as it strongly encodes gender composition (χ² = 324.668, p < 0.001). However, there is limited evidence of proxy in action, since the independent contribution of state to approval outcomes is comparatively small (OR = 1.066) once gender and financial risk factors are controlled for.
+
+Accordingly, while state qualifies as a structural proxy variable, the results do not suggest that approval decisions are being meaningfully driven by geographic signal beyond legitimate financial considerations. From a governance standpoint, this represents a monitoring risk rather than confirmed proxy discrimination, warranting continued oversight of geographic features in future modeling or policy adjustments.
+
 ---
 
 ## 5.4 Summary
