@@ -234,16 +234,11 @@ These issues highlight the importance of **data governance controls and preproce
 
 # 5. Bias and Fairness Analysis
 
-This stage evaluates whether NovaCred’s automated credit decision system produces systematically different outcomes across demographic groups.
+This audit evaluates whether NovaCred’s historical loan approval decisions exhibit systematic bias and whether any non-protected variables act as proxy indicators for protected attributes such as gender or age. The objective is to assess potential fairness risks as well as associated governance and regulatory exposure within the current decision framework.
 
-The bias analysis was conducted on the **cleaned dataset of 500 records after deduplication**. Before computing fairness metrics, the data was preprocessed by standardizing gender values, parsing mixed-format birth dates to derive age, and handling invalid financial values identified during the data quality stage.
+The analysis focuses on four dimensions. First, whether approval outcomes differ systematically by gender. Second, whether approval rates vary across age groups. Third, whether disparities are amplified or concentrated within specific subgroups when considering the interaction between age and gender. Fourth, whether geographic variables, particularly state and ZIP code, may function as structural proxies by encoding demographic composition.
 
-The analysis focuses on four elements:
-
-- approval-rate disparities across demographic groups  
-- disparate impact using the **four-fifths rule**  
-- age-based differences in approval outcomes  
-- proxy and interaction effects involving ZIP code and demographic variables  
+Overall, the audit is designed to distinguish between direct group disparities and indirect proxy risks, ensuring that both overt and structural sources of bias are evaluated within a coherent governance framework.
 
 ---
 
@@ -251,58 +246,74 @@ The analysis focuses on four elements:
 
 The overall loan approval rate across the dataset is **58.4%**.
 
-When broken down by gender, a substantial approval gap appears:
+We begin by comparing approval outcomes across gender groups:
 
 | Gender | Approved | Total | Approval Rate |
 |---|---:|---:|---:|
 | Male | 163 | 247 | **66.0%** |
 | Female | 127 | 251 | **50.6%** |
 
+To quantify fairness, we compute the Disparate Impact (DI) ratio, defined as the approval rate of the unprivileged group divided by that of the privileged group.
+
 The **Disparate Impact Ratio** is therefore:
 
-`50.6% / 66.0% = 0.7668`
+`0.506 / 0.660 = 0.767`
 
-Under the **four-fifths rule**, values below **0.80** indicate potential disparate impact. The observed ratio of **0.77** therefore suggests a meaningful fairness concern in loan approval outcomes.
+Under the commonly used four-fifths rule, a DI ratio below 0.80 signals potential disparate impact. The observed value of 0.768 therefore indicates that female applicants are approved at a substantially lower rate than male applicants.
 
-This difference is also statistically significant. A chi-square test indicates that the relationship between gender and approval outcome is unlikely to be due to random variation.
-
-A conditional fairness test using logistic regression was also performed with financial control variables such as income, debt-to-income ratio, credit history, savings balance, and age. Even after controlling for these variables, gender remained a significant predictor of approval outcome. This suggests that the observed disparity cannot be fully explained by the financial variables included in the dataset.
-
-At the same time, the analysis did **not** find strong evidence of pricing discrimination among approved applicants. The main fairness concern appears to affect **approval decisions**, rather than the interest rates assigned after approval.
+Female applicants are roughly 23% less likely to be approved than male applicants when measured using approval rates alone. Because the DI ratio falls below the regulatory threshold, this pattern represents a potential fairness and compliance concern that warrants deeper investigation into the decision process.
 
 ---
 
 ## 5.2 Age Bias Analysis
 
-Applicant age was derived from the `date_of_birth` field after standardizing mixed date formats.
-
 Applicants were grouped into five age bands:
 
 | Age Group | Approved | Total | Approval Rate |
 |---|---:|---:|---:|
-| 18–25 | 10 | 23 | **43.5%** |
-| 26–35 | 78 | 161 | **48.5%** |
-| 36–50 | 149 | 221 | **67.4%** |
-| 51–65 | 48 | 83 | 57.8% |
-| 66+ | 4 | 8 | 50.0% |
+| 18–25 | 9 | 17 | **52.9%** |
+| 26–35 | 46 | 105 | **43.8%** |
+| 36–45 | 73 | 115 | **63.5%** |
+| 46–55 | 37 | 57 | 64.9% |
+| 56–65 | 26 | 39 | 67.7% |
+| 66+ | 3 | 6 | 50.0% |
 
-The results show lower approval rates among younger applicants, especially those under 35, compared with the highest-performing age group of 36–50.
+The lowest approval rate appears among applicants aged 26–35, while middle-aged groups (36–65) exhibit consistently higher approval rates. The youngest (18–25) and oldest (66+) categories show more moderate approval levels; however, both groups contain relatively few applicants, making their rates more sensitive to small changes in outcomes.
 
-A statistical test across age groups confirms that these approval differences are significant. However, when age is tested alongside financial controls in a logistic model, age does not appear to remain independently predictive. This suggests that the age disparities may be partly explained by correlated financial factors such as shorter credit histories among younger applicants, rather than direct age-based discrimination alone.
+A chi-square test confirms that approval outcomes are statistically associated with age group (p = 0.0273<0.005) indicating that the variation across age segments is unlikely to be random.
+
+Interpretation should account for both statistical significance and sample composition. The small size of the youngest and oldest groups limits the stability of conclusions for those segments. The more policy-relevant contrast lies between the 26–35 group and the middle-aged categories, where differences are observed within substantially larger samples.
+
+From a structural perspective, younger applicants tend to have lower income levels, shorter credit histories, and smaller savings balances — patterns consistent with life-cycle financial effects. This suggests that part of the observed age disparity may reflect financial maturity differences rather than direct age-based discrimination. Nonetheless, because age is a protected characteristic, the magnitude and consistency of these differences warrant ongoing governance monitoring.
 
 ---
 
-## 5.3 Proxy and Interaction Effects
+## 5.3 Interaction Effects: Age × Gender
 
-The analysis also considered whether other variables might act as indirect proxies for protected attributes.
+To assess whether gender disparities vary across age segments, we compared approval rates for women and men within each age band and computed Disparate Impact (DI) ratios (female approval rate divided by male approval rate).
 
-One important finding concerns **ZIP code**. The dataset is heavily split between ZIP codes associated with two geographic clusters, and those clusters are strongly associated with gender composition. In practice, this means ZIP code may function as a proxy variable even if it is not explicitly intended to represent gender.
+The results show clear variation in the magnitude of the gender gap across age groups:
 
-Although conditional testing did not confirm that ZIP code independently predicts approval after financial controls are included, the variable still presents a governance concern. A feature that is strongly collinear with gender may introduce structural discrimination risk in future model versions.
+- **18–25:** Female approval rate = 50.0% vs. male = 60.0% (DI = 0.833)
+- **26–35:** Female = 36.8% vs. male = 52.1% (DI = 0.707)
+- **36–45:** Female = 60.0% vs. male = 66.2% (DI = 0.907)
+- **46–55:** Female = 58.6% vs. male = 70.4% (DI = 0.833)
+- **56–65:** Female = 60.0% vs. male = 73.7% (DI = 0.814)
+- **66+:** Female = 33.3% vs. male = 66.7% (DI = 0.500)
 
-The analysis also reviewed selected spending-related variables as potential proxy features. No strong evidence of proxy discrimination through spending behaviour was confirmed in the fairness tests, but some categories still raise governance concerns because they may capture sensitive lifestyle information without a clear credit-risk justification.
+The most pronounced disparity appears in the **26–35 group**, where the DI ratio is **0.707**, meaning women in this age band are approved at roughly 71% of the rate of men. The **66+ group** shows an even lower DI of **0.500**; however, this segment contains only six applicants in total (three women and three men), making the estimate highly unstable and sensitive to small changes in outcomes.
 
-Finally, interaction effects between **gender and age** suggest that aggregate fairness metrics may understate the severity of disparities for some subgroups. This indicates that fairness monitoring should not rely only on high-level averages, but also examine subgroup outcomes where compounded disadvantage may occur.
+Similarly, the **18–25 group** includes only 17 applicants overall, which limits the robustness of conclusions in that segment. In contrast, the 26–35 and 36–45 groups contain substantially larger samples, making disparities observed there more reliable from a statistical and governance standpoint.
+
+Applying the 0.80 Disparate Impact benchmark as a reference point, adverse impact is not uniformly present across all age groups. Most segments remain above the screening threshold, indicating that gender disparities in those bands do not meet the conventional adverse impact trigger.
+
+However, the 26–35 group falls below the 0.80 benchmark, signaling a meaningful adverse impact concern within that age band. The 66+ group also falls below the threshold, though conclusions there should be treated cautiously due to the very small number of applicants in that segment.
+
+Overall, the results suggest that gender-based adverse impact is **concentrated rather than systemic across all ages.** The fairness risk emerges primarily within a specific age band, highlighting the importance of subgroup monitoring rather than relying solely on aggregate gender metrics.
+
+---
+
+## 5.4 Proxy discrimination
 
 ---
 
