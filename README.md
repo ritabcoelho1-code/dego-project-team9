@@ -10,54 +10,108 @@
 
 ---
 
-## Table of Contents
+## Executive Summary
 
-- [1. Introduction](#1-introduction)
-- [2. Dataset Description](#2-dataset-description)
-- [3. Project Overview](#3-project-overview)
-  - [3.1 Objective](#31-objective)
-  - [3.2 Scope](#32-scope)
-  - [3.3 Methodology](#33-methodology)
-- [4. Data Quality Assessment](#4-data-quality-assessment)
-- [5. Bias and Fairness Analysis](#5-bias-and-fairness-analysis)
-- [6. Privacy and Governance Assessment](#6-privacy-and-governance-assessment)
-- [7. Governance Recommendations](#7-governance-recommendations)
+This project conducts a governance audit of NovaCred’s automated credit decision dataset as part of the **Data Ecosystems and Governance in Organizations (DEGO 2606)** course project. The objective is to identify risks related to **data quality, algorithmic fairness, and privacy compliance**, and to propose governance improvements for responsible AI deployment.
+
+The analysis is based on NovaCred’s historical credit application dataset containing **502 records in nested JSON format**. The dataset includes applicant demographic attributes, financial indicators, behavioural spending data, and the final automated loan decision.
+
+The governance audit focuses on three analytical dimensions:
+
+### Data Quality
+
+Several structural issues were identified in the raw dataset that could undermine reliability and auditability of automated decisions. Key findings include:
+
+- **Duplicate application IDs**, affecting traceability of decisions  
+- **Schema inconsistencies** between `annual_income` and `annual_salary` fields  
+- **Inconsistent categorical encoding** in demographic attributes such as gender  
+- **Mixed date formats** across temporal fields  
+- **Invalid negative financial values**, including savings balances and credit history duration  
+
+These issues highlight weaknesses in NovaCred’s data ingestion and validation processes and demonstrate the need for stronger **data governance controls** before automated decision systems are deployed in production environments.
+
+### Bias and Fairness
+
+The fairness analysis evaluates potential disparities in loan approval outcomes across demographic groups.
+
+Key findings include:
+
+- An overall **loan approval rate of 58.4%**
+- A **gender approval gap** between male applicants (66.0%) and female applicants (50.6%)
+- A **Disparate Impact Ratio of 0.77**, below the **four-fifths rule threshold (0.80)**, indicating potential disparate impact
+- Lower approval rates among younger applicants, particularly those aged **18–35**
+- Evidence that **ZIP code may act as a proxy variable** correlated with demographic attributes
+
+These results suggest that fairness risks may exist in the automated credit approval process and that additional monitoring mechanisms are required to ensure equitable outcomes.
+
+### Privacy and Governance
+
+The dataset contains several forms of **personally identifiable information (PII)** including names, email addresses, social security numbers, IP addresses, and birth dates. These elements raise compliance concerns under the **General Data Protection Regulation (GDPR)**.
+
+To demonstrate privacy-preserving practices, a transformed dataset was created using:
+
+- hashing of email addresses  
+- masking of social security numbers  
+- removal of direct identifiers  
+- generalization of dates of birth into age groups  
+
+These steps illustrate how **privacy-by-design principles** can reduce re-identification risks while preserving analytical value.
+
+### Governance Implications
+
+The findings indicate that NovaCred’s credit decision pipeline would benefit from stronger governance controls in three areas:
+
+- improved **data validation and schema management**  
+- continuous **fairness monitoring and bias detection**  
+- stronger **privacy protections and regulatory compliance practices**
+
+Implementing these measures would enhance the **trustworthiness, transparency, and regulatory readiness** of NovaCred’s automated credit decision system.
+
+# Table of Contents
+
+1. [Introduction](#1-introduction)  
+2. [Dataset Description](#2-dataset-description)  
+3. [Project Overview](#3-project-overview)  
+4. [Data Quality Assessment](#4-data-quality-assessment)  
+5. [Bias and Fairness Analysis](#5-bias-and-fairness-analysis)  
+6. [Privacy and Governance Assessment](#6-privacy-and-governance-assessment)  
+7. [Governance Recommendations](#7-governance-recommendations)
 
 ---
 
 # 1. Introduction
 
-This repository contains the analysis conducted for the **Data Ethics and Governance (DEGO) course project**, focused on evaluating the governance risks associated with NovaCred’s automated credit decision system.
+This repository contains the analysis conducted for the **Data Ethics and Governance (DEGO) course project**, focused on evaluating governance risks associated with NovaCred’s automated credit decision system.
 
-Automated credit scoring systems operate in highly regulated environments where decision outcomes can significantly affect individuals’ financial opportunities. Organizations deploying these systems must therefore ensure that their data and decision pipelines meet standards of **data quality, fairness, transparency, and regulatory compliance**.
+Automated credit decision systems operate in highly regulated environments where algorithmic outcomes may significantly impact individuals’ financial opportunities. Organizations deploying such systems must ensure that their data pipelines meet standards of **data quality, fairness, transparency, and regulatory compliance**.
 
-This project performs a structured governance audit of NovaCred’s credit application dataset to identify risks related to:
+This project conducts a governance audit of NovaCred’s historical credit application dataset in order to identify potential risks related to:
 
-- data integrity and reliability  
-- algorithmic bias and disparate impact  
+- data quality and reliability  
+- algorithmic bias and fairness  
 - privacy and regulatory compliance  
 
-The objective is not to modify the production credit model but rather to evaluate whether the **supporting dataset and decision pipeline meet responsible AI governance standards**.
+The objective is not to redesign the credit model itself, but to evaluate whether the **underlying data and governance processes support responsible AI deployment**.
 
 ---
 
 # 2. Dataset Description
 
-The analysis uses NovaCred’s historical **credit application dataset**, provided in a nested JSON format. The dataset contains approximately **500 credit application records**, each representing an automated credit decision generated by NovaCred’s internal credit scoring system.
+The analysis uses NovaCred’s historical **credit application dataset**, provided in nested JSON format.
 
-Each application record contains multiple categories of information, including applicant identifiers, financial attributes, behavioural spending data, and the final loan decision outcome.
+The dataset contains approximately **500 credit application records (502 raw records before cleaning)**, each representing an automated credit decision generated by NovaCred’s internal scoring system.
 
-### Dataset Structure
+Each record includes several categories of information:
 
 | Category | Fields Included | Governance Relevance |
-|----------|----------------|----------------------|
-| Applicant Information | `full_name`, `email`, `ssn`, `ip_address`, `gender`, `date_of_birth`, `zip_code` | Contains direct and indirect identifiers relevant for privacy, fairness, and traceability |
-| Financial Information | `annual_income`, `credit_history_months`, `debt_to_income`, `savings_balance` | Core inputs used for credit risk evaluation |
-| Spending Behaviour | categorized spending transactions (e.g., rent, groceries, healthcare) | May reveal behavioural patterns and potential proxy variables |
-| Decision Data | `loan_approved`, `interest_rate`, `approved_amount`, `rejection_reason` | Represents the outcome of the automated credit approval process |
-| System Metadata | `processing_timestamp` | Enables auditability and traceability of automated decisions |
+|---|---|---|
+| Applicant Information | `full_name`, `email`, `ssn`, `ip_address`, `gender`, `date_of_birth`, `zip_code` | Contains direct and indirect identifiers relevant for privacy and fairness |
+| Financial Information | `annual_income`, `credit_history_months`, `debt_to_income`, `savings_balance` | Core financial variables used for credit decisions |
+| Spending Behaviour | categorized spending transactions | May reveal behavioural patterns and potential proxy variables |
+| Decision Data | `loan_approved`, `interest_rate`, `approved_amount`, `rejection_reason` | Represents the outcome of the automated credit decision |
+| System Metadata | `processing_timestamp` | Enables auditability and traceability of decisions |
 
-The dataset intentionally contains several **data quality issues and governance weaknesses**, including missing values, inconsistent encodings, inconsistent date formats, and incomplete audit trail information.
+The dataset intentionally contains **data quality weaknesses and governance risks** which must be identified and addressed before reliable analysis or responsible AI deployment.
 
 ---
 
@@ -65,37 +119,32 @@ The dataset intentionally contains several **data quality issues and governance 
 
 ## 3.1 Objective
 
-The objective of this project is to conduct a structured governance assessment of NovaCred’s credit application dataset and automated credit decision process.
+The objective of this project is to conduct a structured governance assessment of NovaCred’s automated credit decision pipeline.
 
-The analysis focuses on three core dimensions of responsible AI governance:
+The analysis focuses on three core governance dimensions:
 
 **Data Quality**  
-Evaluate whether the dataset meets key quality standards including completeness, consistency, validity, and structural integrity.
+Evaluate whether the dataset satisfies standards for completeness, consistency, validity, and structural integrity.
 
 **Bias and Fairness**  
-Assess whether loan approval outcomes exhibit disparities across demographic groups, particularly with respect to gender and age.
+Assess whether loan approval outcomes exhibit disparities across demographic groups, particularly across gender and age.
 
 **Privacy and Governance**  
-Identify personally identifiable information (PII), evaluate potential compliance risks under the **General Data Protection Regulation (GDPR)**, and assess governance implications under the **EU AI Act** for high-risk AI systems.
-
-The project aims to **identify governance risks, quantify their potential impact, and propose mitigation measures** to improve NovaCred’s credit decision pipeline.
+Identify personal data within the dataset and evaluate regulatory risks under **GDPR** and governance requirements under the **EU AI Act**.
 
 ---
 
 ## 3.2 Scope
 
-This project evaluates NovaCred’s historical credit application dataset used to support automated credit approval decisions.
+The project evaluates NovaCred’s historical credit application dataset and focuses on:
 
-The analysis includes:
+- assessing dataset completeness and consistency  
+- identifying potential fairness disparities across demographic groups  
+- detecting proxy variables correlated with protected attributes  
+- evaluating privacy risks related to personally identifiable information (PII)  
+- assessing governance requirements for high-risk AI systems  
 
-- assessment of data quality across completeness, consistency, validity, and accuracy dimensions  
-- detection of potential disparate impact across demographic groups  
-- investigation of proxy variables that may correlate with protected characteristics  
-- identification of personal data and associated GDPR compliance risks  
-- evaluation of governance requirements under the EU AI Act  
-- assessment of auditability, transparency, and human oversight practices  
-
-The project focuses on **data governance and decision transparency**, rather than the internal architecture of the credit scoring algorithm itself.
+The project focuses on **data governance and transparency**, rather than the internal architecture of the credit scoring algorithm.
 
 ---
 
@@ -137,41 +186,302 @@ In addition to direct disparity testing, we conducted a **proxy discrimination a
 
 ---
 
-### Privacy and Governance Assessment
+## 4.4 Temporal Data Inconsistencies
 
-The final stage evaluates the dataset from a privacy and regulatory governance perspective.
+Temporal variables such as:
 
-The dataset contains several categories of **personally identifiable information (PII)** including names, email addresses, social security numbers, IP addresses, and demographic attributes.
+- `processing_timestamp`
+- `date_of_birth`
 
-These elements were evaluated against GDPR principles such as:
+contained **inconsistent date formats** across records.
 
-- data minimisation  
-- integrity and confidentiality  
-- accountability  
+Such inconsistencies make it difficult to parse, compare, and perform temporal analysis reliably.
 
-To demonstrate privacy-preserving data governance, several transformations were applied to create a privacy-enhanced dataset:
-
-- hashing of email addresses  
-- masking of social security numbers  
-- generalisation of dates of birth  
-- removal of direct identifiers  
-
-These transformations illustrate how **privacy-by-design principles** can be implemented within AI data pipelines.
+All date fields were therefore standardized to a consistent datetime format during preprocessing.
 
 ---
 
-# 4. Data Quality Assessment
+## 4.5 Invalid Financial Values
 
-*(Content continues in the Data Quality notebook.)*
+Several financial variables contained **invalid negative values**, including:
+
+- credit history length  
+- savings balance
+
+These values represent **data validity violations**, as credit history duration and savings balances cannot logically be negative.
+
+Rather than imputing arbitrary values, these invalid entries were replaced with `NaN` in the cleaned dataset to prevent misleading downstream analysis.
+
+---
+
+## 4.6 Summary
+
+The data quality audit revealed several structural weaknesses that could compromise analytical reliability and governance transparency.
+
+The most critical issues identified were:
+
+- duplicate primary keys affecting traceability  
+- inconsistent schema definitions for income variables  
+- inconsistent categorical encoding  
+- inconsistent date formats  
+- invalid financial values
+
+These issues highlight the importance of **data governance controls and preprocessing procedures** before deploying automated credit decision systems.
+
+---
 
 # 5. Bias and Fairness Analysis
 
-*(Content continues in the Bias Analysis notebook.)*
+This stage evaluates whether NovaCred’s automated credit decision system produces systematically different outcomes across demographic groups.
+
+The bias analysis was conducted on the **cleaned dataset of 500 records after deduplication**. Before computing fairness metrics, the data was preprocessed by standardizing gender values, parsing mixed-format birth dates to derive age, and handling invalid financial values identified during the data quality stage.
+
+The analysis focuses on four elements:
+
+- approval-rate disparities across demographic groups  
+- disparate impact using the **four-fifths rule**  
+- age-based differences in approval outcomes  
+- proxy and interaction effects involving ZIP code and demographic variables  
+
+---
+
+## 5.1 Gender Bias Analysis
+
+The overall loan approval rate across the dataset is **58.4%**.
+
+When broken down by gender, a substantial approval gap appears:
+
+| Gender | Approved | Total | Approval Rate |
+|---|---:|---:|---:|
+| Male | 163 | 247 | **66.0%** |
+| Female | 127 | 251 | **50.6%** |
+
+The **Disparate Impact Ratio** is therefore:
+
+`50.6% / 66.0% = 0.7668`
+
+Under the **four-fifths rule**, values below **0.80** indicate potential disparate impact. The observed ratio of **0.77** therefore suggests a meaningful fairness concern in loan approval outcomes.
+
+This difference is also statistically significant. A chi-square test indicates that the relationship between gender and approval outcome is unlikely to be due to random variation.
+
+A conditional fairness test using logistic regression was also performed with financial control variables such as income, debt-to-income ratio, credit history, savings balance, and age. Even after controlling for these variables, gender remained a significant predictor of approval outcome. This suggests that the observed disparity cannot be fully explained by the financial variables included in the dataset.
+
+At the same time, the analysis did **not** find strong evidence of pricing discrimination among approved applicants. The main fairness concern appears to affect **approval decisions**, rather than the interest rates assigned after approval.
+
+---
+
+## 5.2 Age Bias Analysis
+
+Applicant age was derived from the `date_of_birth` field after standardizing mixed date formats.
+
+Applicants were grouped into five age bands:
+
+| Age Group | Approved | Total | Approval Rate |
+|---|---:|---:|---:|
+| 18–25 | 10 | 23 | **43.5%** |
+| 26–35 | 78 | 161 | **48.5%** |
+| 36–50 | 149 | 221 | **67.4%** |
+| 51–65 | 48 | 83 | 57.8% |
+| 66+ | 4 | 8 | 50.0% |
+
+The results show lower approval rates among younger applicants, especially those under 35, compared with the highest-performing age group of 36–50.
+
+A statistical test across age groups confirms that these approval differences are significant. However, when age is tested alongside financial controls in a logistic model, age does not appear to remain independently predictive. This suggests that the age disparities may be partly explained by correlated financial factors such as shorter credit histories among younger applicants, rather than direct age-based discrimination alone.
+
+---
+
+## 5.3 Proxy and Interaction Effects
+
+The analysis also considered whether other variables might act as indirect proxies for protected attributes.
+
+One important finding concerns **ZIP code**. The dataset is heavily split between ZIP codes associated with two geographic clusters, and those clusters are strongly associated with gender composition. In practice, this means ZIP code may function as a proxy variable even if it is not explicitly intended to represent gender.
+
+Although conditional testing did not confirm that ZIP code independently predicts approval after financial controls are included, the variable still presents a governance concern. A feature that is strongly collinear with gender may introduce structural discrimination risk in future model versions.
+
+The analysis also reviewed selected spending-related variables as potential proxy features. No strong evidence of proxy discrimination through spending behaviour was confirmed in the fairness tests, but some categories still raise governance concerns because they may capture sensitive lifestyle information without a clear credit-risk justification.
+
+Finally, interaction effects between **gender and age** suggest that aggregate fairness metrics may understate the severity of disparities for some subgroups. This indicates that fairness monitoring should not rely only on high-level averages, but also examine subgroup outcomes where compounded disadvantage may occur.
+
+---
+
+## 5.4 Summary
+
+The bias and fairness assessment identifies a clear governance concern in the NovaCred decision pipeline.
+
+The main findings are:
+
+- a substantial and statistically significant approval gap between male and female applicants  
+- a **Disparate Impact Ratio below 0.80**, indicating potential disparate impact under the four-fifths rule  
+- age-related differences in approval outcomes, especially for younger applicants  
+- evidence that ZIP code may operate as a structurally risky proxy variable  
+- subgroup-level disparities that may be hidden by aggregate fairness metrics  
+
+Overall, the results suggest that fairness risks are present in the automated approval process and should be addressed through stronger monitoring, model review, and governance controls.
+
+---
 
 # 6. Privacy and Governance Assessment
 
-*(Content continues in the Privacy notebook.)*
+The final stage of the analysis evaluates the dataset from a **privacy and regulatory governance perspective**. Automated credit decision systems operate in a highly regulated environment where personal data must be handled according to strict legal and ethical standards.
+
+The NovaCred dataset contains several categories of **personally identifiable information (PII)** that could expose individuals to privacy risks if improperly handled.
+
+Examples of sensitive data present in the dataset include:
+
+- full names  
+- email addresses  
+- social security numbers  
+- IP addresses  
+- birth dates  
+- ZIP codes  
+
+These variables make it possible to **directly or indirectly identify individuals**, which introduces potential compliance risks under the **General Data Protection Regulation (GDPR)**.
+
+---
+
+## 6.1 Identification of Personal Data
+
+Several attributes in the dataset qualify as **direct identifiers**, meaning they can uniquely identify an individual without additional information. These include names, social security numbers, and email addresses.
+
+Other attributes function as **quasi-identifiers**, which may not uniquely identify an individual on their own but can lead to identification when combined with other variables. Examples include date of birth, ZIP code, and IP address.
+
+The presence of both direct and quasi-identifiers significantly increases the **re-identification risk** within the dataset.
+
+---
+
+## 6.2 GDPR Compliance Risks
+
+From a governance perspective, the dataset raises several potential compliance issues under GDPR principles.
+
+First, the dataset includes personal identifiers that may not be strictly necessary for the automated credit decision process. This raises concerns related to the **data minimisation principle**, which requires organizations to collect only the data that is necessary for a specific purpose.
+
+Second, the dataset contains highly sensitive identifiers such as **social security numbers**, which require strong security safeguards. If such data were exposed or misused, it could lead to identity theft or financial fraud.
+
+Finally, the dataset does not contain explicit indicators of user consent or documented processing purposes. This may create **accountability and transparency concerns** if the dataset were used in real-world automated decision systems.
+
+These risks relate particularly to core GDPR requirements, including **Article 5** on data minimisation and storage limitation, **Article 17** on the right to erasure, and **Article 32** on the security of processing.
+
+---
+
+## 6.3 Privacy-Preserving Transformations
+
+To demonstrate privacy-preserving governance practices, a **privacy-enhanced dataset** was created as part of the analysis.
+
+Several transformations were applied to reduce the risk of personal identification:
+
+- email addresses were hashed  
+- social security numbers were masked  
+- dates of birth were generalized into age groups  
+- direct identifiers such as names were removed  
+
+These transformations illustrate how **privacy-by-design principles** can be implemented in AI data pipelines while preserving analytical usefulness.
+
+---
+
+## 6.4 Governance Implications
+
+Automated credit decision systems fall under the category of **high-risk AI systems** under the EU AI Act.
+
+Such systems require strong governance controls, including:
+
+- documented data governance procedures  
+- fairness monitoring and risk assessment  
+- traceability of automated decisions  
+- protection of personal data throughout the data lifecycle
+
+The presence of direct identifiers and quasi-identifiers in the raw dataset highlights the importance of **robust privacy governance practices** before deploying automated decision systems in production environments.
+
+---
 
 # 7. Governance Recommendations
 
-*(Governance recommendations are summarised based on the findings of the three analytical stages.)*
+Based on the findings from the data quality, fairness, and privacy assessments, several governance improvements are recommended for NovaCred’s credit decision pipeline.
+
+These recommendations focus on reducing regulatory risk, improving data reliability, and strengthening accountability in automated decision-making.
+
+---
+
+## 7.1 Strengthen Data Validation at Ingestion
+
+NovaCred should implement stronger validation checks before records enter the analytics or decision pipeline.
+
+These checks should include:
+
+- enforcing unique application IDs  
+- validating numeric ranges for financial variables  
+- rejecting logically impossible values  
+- standardizing date and categorical formats at ingestion  
+
+This would reduce the number of downstream cleaning interventions required and improve the reliability of both analysis and decision-making.
+
+---
+
+## 7.2 Standardize the Data Schema
+
+The audit identified structural inconsistencies such as the use of both `annual_income` and `annual_salary` for the same concept.
+
+NovaCred should establish a **single governed schema** for all core variables, with:
+
+- standardized field names  
+- fixed data types  
+- clear documentation for each attribute  
+- version control for schema updates  
+
+A consistent schema is essential for auditability, reproducibility, and model governance.
+
+---
+
+## 7.3 Implement Fairness Monitoring
+
+The fairness analysis identified a **Disparate Impact Ratio below 0.80** and statistically significant approval differences across gender groups.
+
+NovaCred should therefore implement an ongoing fairness monitoring process that includes:
+
+- approval-rate tracking across demographic groups  
+- regular recalculation of disparate impact metrics  
+- subgroup analysis by gender and age  
+- review of proxy variables such as ZIP code  
+
+These checks should be integrated into routine model governance rather than performed only after regulatory concerns arise.
+
+---
+
+## 7.4 Reduce the Use of Sensitive Personal Data
+
+The raw dataset contains several direct identifiers and quasi-identifiers that create unnecessary privacy risk.
+
+NovaCred should apply **data minimisation and privacy-by-design principles** by:
+
+- removing identifiers that are not necessary for decisioning  
+- pseudonymizing sensitive fields before analysis  
+- limiting access to raw personal data  
+- documenting retention and deletion policies  
+
+This would improve compliance with GDPR and reduce the likelihood of misuse or re-identification.
+
+---
+
+## 7.5 Improve Auditability and Human Oversight
+
+Because credit scoring is a high-risk decision context, NovaCred should improve its governance documentation and oversight controls.
+
+This should include:
+
+- maintaining an audit trail of automated decisions  
+- documenting model versions and data transformations  
+- defining human review procedures for rejected or borderline applications  
+- clearly assigning accountability for fairness and privacy risks  
+
+Better traceability and oversight would support compliance with both GDPR and the EU AI Act while making the credit decision process more transparent and defensible.
+
+---
+
+## 7.6 Summary
+
+Overall, the governance assessment suggests that NovaCred’s current credit decision pipeline would benefit from stronger controls in three areas:
+
+- **data quality governance**, to improve consistency and reliability  
+- **fairness governance**, to detect and mitigate discriminatory outcomes  
+- **privacy governance**, to reduce exposure of personal data and support compliance  
+
+Together, these measures would improve the trustworthiness, transparency, and regulatory readiness of the system.
