@@ -34,13 +34,15 @@ These issues highlight weaknesses in NovaCred’s data ingestion and validation 
 
 The fairness analysis evaluates potential disparities in loan approval outcomes across demographic groups.
 
-Key findings include:
+Key findings are:
 
-- An overall **loan approval rate of 58.4%**
-- A **gender approval gap** between male applicants (66.0%) and female applicants (50.6%)
-- A **Disparate Impact Ratio of 0.77**, below the **four-fifths rule threshold (0.80)**, indicating potential disparate impact
-- Lower approval rates among younger applicants, particularly those aged **18–35**
-- Evidence that **ZIP code may act as a proxy variable** correlated with demographic attributes
+Female applicants are approved at materially lower rates than male applicants. The Disparate Impact (DI) ratio falls below the four-fifths threshold of 0.80, indicating potential disparate impact. This suggests that gender-based differences in approval outcomes represent a significant fairness concern that requires further scrutiny.
+
+Approval outcomes vary significantly across age groups. Statistical testing confirms that approval rates are not independent of age category. While some variation may reflect structural life-cycle differences (such as credit history accumulation), the magnitude of the observed differences warrants continued monitoring from a governance perspective.
+
+The interaction analysis reveals that gender disparities are not uniformly distributed across age groups. Segment-level DI ratios indicate that certain age bands exhibit more pronounced gender gaps than others. This highlights the importance of intersectional analysis, as aggregate fairness metrics may mask concentrated subgroup disparities.
+
+ZIP code (state derived from ZIP) is strongly associated with gender, indicating that geographic variables encode protected-attribute information. Although geography does not independently drive approval outcomes in the controlled model, its strong demographic concentration presents a proxy risk. The inclusion of ZIP-level geographic features in predictive models may therefore introduce indirect fairness and compliance concerns.
 
 These results suggest that fairness risks may exist in the automated credit approval process and that additional monitoring mechanisms are required to ensure equitable outcomes.
 
